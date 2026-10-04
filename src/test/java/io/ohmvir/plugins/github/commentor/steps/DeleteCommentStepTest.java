@@ -47,10 +47,9 @@ class DeleteCommentStepTest {
         return step;
     }
 
-    private static String script(String repo, String identifier, String type, String credentialsId) {
+    private static String script(String repo, String type, String credentialsId) {
         String credentials = credentialsId == null ? "" : ", credentialsId: '" + credentialsId + "'";
-        return "deleteComment repo: '" + repo + "', identifier: '" + identifier + "', identifierType: '" + type
-                + "', commentId: 1" + credentials;
+        return "deleteComment repo: '" + repo + "', identifierType: '" + type + "', commentId: 1" + credentials;
     }
 
     private WorkflowRun runExpectingFailure(String pipelineScript) throws Exception {
@@ -141,42 +140,21 @@ class DeleteCommentStepTest {
 
     @Test
     void invalidRepoFailsTheBuild() throws Exception {
-        WorkflowRun run = runExpectingFailure(script("not a repo", "12", "ISSUE", "any-cred"));
+        WorkflowRun run = runExpectingFailure(script("not a repo", "ISSUE", "any-cred"));
 
         j.assertLogContains("Invalid repo", run);
     }
 
     @Test
-    void invalidIssueNumberFailsTheBuild() throws Exception {
-        WorkflowRun run = runExpectingFailure(script("octocat/hello-world", "0", "ISSUE", "any-cred"));
-
-        j.assertLogContains("Invalid issue identifier", run);
-    }
-
-    @Test
-    void invalidPullRequestNumberFailsTheBuild() throws Exception {
-        WorkflowRun run = runExpectingFailure(script("octocat/hello-world", "-3", "PULL_REQUEST", "any-cred"));
-
-        j.assertLogContains("Invalid issue identifier", run);
-    }
-
-    @Test
-    void invalidCommitHashFailsTheBuild() throws Exception {
-        WorkflowRun run = runExpectingFailure(script("octocat/hello-world", "abc123", "COMMIT", "any-cred"));
-
-        j.assertLogContains("Invalid commit identifier", run);
-    }
-
-    @Test
     void unknownIdentifierTypeFailsTheBuild() throws Exception {
-        WorkflowRun run = runExpectingFailure(script("octocat/hello-world", "12", "NOPE", "any-cred"));
+        WorkflowRun run = runExpectingFailure(script("octocat/hello-world", "NOPE", "any-cred"));
 
         j.assertLogContains("NOPE", run);
     }
 
     @Test
     void unknownCredentialsFailTheBuild() throws Exception {
-        WorkflowRun run = runExpectingFailure(script("octocat/hello-world", "12", "ISSUE", "does-not-exist"));
+        WorkflowRun run = runExpectingFailure(script("octocat/hello-world", "ISSUE", "does-not-exist"));
 
         j.assertLogContains("Credentials not found", run);
     }
@@ -184,17 +162,9 @@ class DeleteCommentStepTest {
     @Test
     void validationHappensBeforeCredentialLookup() throws Exception {
         // both the repo and the credentials are bad; the repo error must win
-        WorkflowRun run = runExpectingFailure(script("not a repo", "12", "ISSUE", "does-not-exist"));
+        WorkflowRun run = runExpectingFailure(script("not a repo", "ISSUE", "does-not-exist"));
 
         j.assertLogContains("Invalid repo", run);
-        j.assertLogNotContains("Credentials not found", run);
-    }
-
-    @Test
-    void identifierValidationHappensBeforeCredentialLookup() throws Exception {
-        WorkflowRun run = runExpectingFailure(script("octocat/hello-world", "0", "ISSUE", "does-not-exist"));
-
-        j.assertLogContains("Invalid issue identifier", run);
         j.assertLogNotContains("Credentials not found", run);
     }
 
@@ -206,7 +176,7 @@ class DeleteCommentStepTest {
      */
     @Test
     void omittedCredentialsIdWithNoDefaultFailsWithCredentialsNotFound() throws Exception {
-        WorkflowRun run = runExpectingFailure(script("octocat/hello-world", "12", "ISSUE", null));
+        WorkflowRun run = runExpectingFailure(script("octocat/hello-world", "ISSUE", null));
 
         j.assertLogContains("Credentials not found", run);
     }
