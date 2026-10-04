@@ -27,7 +27,7 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
  * reach the network. The success and HTTP-error paths need a configurable base URL (see notes).
  */
 @WithJenkins
-class DeleteCommentStepTest {
+class EditCommentStepTest {
 
     private JenkinsRule j;
 
@@ -41,15 +41,16 @@ class DeleteCommentStepTest {
     // ---------------------------------------------------------------------
 
     /** The only place that calls the constructor, so a signature change touches one line. */
-    private static DeleteCommentStep newStep(String credentialsId) {
-        DeleteCommentStep step = new DeleteCommentStep("octocat/hello-world", CommentableResourceType.ISSUE, 1);
+    private static EditCommentStep newStep(String credentialsId) {
+        EditCommentStep step = new EditCommentStep("octocat/hello-world", CommentableResourceType.ISSUE, 1, "hello");
         step.setCredentialsId(credentialsId);
         return step;
     }
 
     private static String script(String repo, String type, String credentialsId) {
         String credentials = credentialsId == null ? "" : ", credentialsId: '" + credentialsId + "'";
-        return "deleteComment repo: '" + repo + "', identifierType: '" + type + "', commentId: 1" + credentials;
+        return "editComment repo: '" + repo + "', identifierType: '" + type + "', commentId: 1, newBody: 'hello'"
+                + credentials;
     }
 
     private WorkflowRun runExpectingFailure(String pipelineScript) throws Exception {
@@ -66,18 +67,20 @@ class DeleteCommentStepTest {
 
     @Test
     void gettersReturnTheConstructorValues() {
-        DeleteCommentStep step = new DeleteCommentStep("octocat/hello-world", CommentableResourceType.COMMIT, 1);
+        EditCommentStep step =
+                new EditCommentStep("octocat/hello-world", CommentableResourceType.COMMIT, 42, "new body");
         step.setCredentialsId("my-cred");
 
         assertEquals("octocat/hello-world", step.getRepo());
         assertEquals(CommentableResourceType.COMMIT, step.getIdentifierType());
-        assertEquals(1, step.getCommentId());
+        assertEquals(42, step.getCommentId());
+        assertEquals("new body", step.getNewBody());
         assertEquals("my-cred", step.getCredentialsId());
     }
 
     @Test
     void setterTrimsCredentialsId() {
-        DeleteCommentStep step = newStep(null);
+        EditCommentStep step = newStep(null);
 
         step.setCredentialsId("  my-cred \n");
 
@@ -86,7 +89,7 @@ class DeleteCommentStepTest {
 
     @Test
     void setterTurnsBlankCredentialsIdIntoNull() {
-        DeleteCommentStep step = newStep("my-cred");
+        EditCommentStep step = newStep("my-cred");
 
         for (String blank : new String[] {"", "   ", "\t\n", null}) {
             step.setCredentialsId(blank);
@@ -108,28 +111,28 @@ class DeleteCommentStepTest {
 
     @Test
     void stepIsRegisteredUnderItsPipelineName() {
-        StepDescriptor descriptor = StepDescriptor.byFunctionName("deleteComment");
+        StepDescriptor descriptor = StepDescriptor.byFunctionName("editComment");
 
-        assertNotNull(descriptor, "deleteComment should be a known Pipeline step");
-        assertInstanceOf(DeleteCommentStep.DescriptorImpl.class, descriptor);
+        assertNotNull(descriptor, "editComment should be a known Pipeline step");
+        assertInstanceOf(EditCommentStep.DescriptorImpl.class, descriptor);
     }
 
     @Test
     void descriptorIsAnExtension() {
-        assertNotNull(ExtensionList.lookupSingleton(DeleteCommentStep.DescriptorImpl.class));
+        assertNotNull(ExtensionList.lookupSingleton(EditCommentStep.DescriptorImpl.class));
     }
 
     @Test
     void descriptorHasAFunctionNameAndADisplayName() {
-        DeleteCommentStep.DescriptorImpl descriptor = new DeleteCommentStep.DescriptorImpl();
+        EditCommentStep.DescriptorImpl descriptor = new EditCommentStep.DescriptorImpl();
 
-        assertEquals("deleteComment", descriptor.getFunctionName());
+        assertEquals("editComment", descriptor.getFunctionName());
         assertTrue(descriptor.getDisplayName().toLowerCase().contains("comment"));
     }
 
     @Test
     void descriptorRequiresRunAndTaskListener() {
-        DeleteCommentStep.DescriptorImpl descriptor = new DeleteCommentStep.DescriptorImpl();
+        EditCommentStep.DescriptorImpl descriptor = new EditCommentStep.DescriptorImpl();
 
         assertEquals(Set.of(Run.class, TaskListener.class), Set.copyOf(descriptor.getRequiredContext()));
     }

@@ -21,12 +21,12 @@ import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 import org.jspecify.annotations.NonNull;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class DeleteCommentStep extends CommentStep {
+public class DeleteCommentStep extends IdentifierTypeRequiredStep {
     private final @Getter int commentId;
 
     @DataBoundConstructor
-    public DeleteCommentStep(String repo, String identifier, CommentableResourceType identifierType, int commentId) {
-        super(repo, identifier, identifierType);
+    public DeleteCommentStep(String repo, CommentableResourceType identifierType, int commentId) {
+        super(repo, identifierType);
         this.commentId = commentId;
     }
 
@@ -52,14 +52,16 @@ public class DeleteCommentStep extends CommentStep {
             TaskListener listener = getContext().get(TaskListener.class);
 
             IdentifierValidator.validateRepo(step.getRepo());
-            IdentifierValidator.validateIdentifier(step.getIdentifier(), step.getIdentifierType());
+            if (step.getIdentifierType() == null) {
+                throw new AbortException("Identifier type not provided");
+            }
 
             String token = CredentialUtils.resolveToken(run, step.getCredentialsId());
             URI apiUrl =
                     switch (step.getIdentifierType()) {
                         case ISSUE, PULL_REQUEST ->
-                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/issues/"
-                                    + step.getIdentifier() + "/comments/" + step.getCommentId());
+                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/issues/comments/"
+                                    + step.getCommentId());
                         case COMMIT ->
                             URI.create("https://api.github.com/repos/" + step.getRepo() + "/comments/"
                                     + step.getCommentId());
@@ -84,13 +86,13 @@ public class DeleteCommentStep extends CommentStep {
             if (response.statusCode() != 204) {
                 throw new AbortException("Github returned HTTP " + response.statusCode() + " while deleting comment "
                         + step.getCommentId() + " on "
-                        + step.getRepo() + " with identifier " + step.getIdentifier() + "/" + step.getIdentifierType()
+                        + step.getRepo() + " with identifier type " + step.getIdentifierType()
                         + ": "
                         + response.body());
             }
             listener.getLogger()
                     .println("Deleted comment " + step.getCommentId() + " on repo " + step.getRepo()
-                            + " attached to identifier " + step.getIdentifier() + "/" + step.getIdentifierType());
+                            + " attached to identifier type " + step.getIdentifierType());
             return null;
         }
     }
