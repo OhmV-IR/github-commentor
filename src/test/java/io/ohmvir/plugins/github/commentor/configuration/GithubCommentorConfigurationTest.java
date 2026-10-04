@@ -79,6 +79,11 @@ class GithubCommentorConfigurationTest {
         return model.stream().map(o -> o.value).collect(Collectors.toList());
     }
 
+    /** Option values excluding the blank "none" option, i.e. the actual credential ids. */
+    private static List<String> credentialIds(ListBoxModel model) {
+        return values(model).stream().filter(v -> v != null && !v.isEmpty()).collect(Collectors.toList());
+    }
+
     // ---------------------------------------------------------------------
     // bean behaviour
     // ---------------------------------------------------------------------
@@ -212,9 +217,9 @@ class GithubCommentorConfigurationTest {
         enableSecurity();
 
         try (ACLContext ignored = ACL.as2(User.getById("alice", true).impersonate2())) {
-            List<String> values = values(config.doFillDefaultCommentorCredentialsItems(null));
+            List<String> ids = credentialIds(config.doFillDefaultCommentorCredentialsItems(null));
 
-            assertTrue(values.isEmpty(), "non-admins must not enumerate credential ids, got " + values);
+            assertTrue(ids.isEmpty(), "non-admins must not enumerate credential ids, got " + ids);
         }
     }
 
@@ -237,7 +242,7 @@ class GithubCommentorConfigurationTest {
         enableSecurity();
 
         try (ACLContext ignored = ACL.as2(Jenkins.ANONYMOUS2)) {
-            assertTrue(values(config.doFillDefaultCommentorCredentialsItems(null)).isEmpty());
+            assertTrue(credentialIds(config.doFillDefaultCommentorCredentialsItems(null)).isEmpty());
         }
     }
 }

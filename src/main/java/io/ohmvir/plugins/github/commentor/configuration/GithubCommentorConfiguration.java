@@ -21,15 +21,21 @@ import java.util.Collections;
 
 @Extension
 public class GithubCommentorConfiguration extends GlobalConfiguration {
-    private @Getter @Setter(onMethod_ = @DataBoundSetter) @Nullable String defaultCommentorCredentials;
+    private @Getter @Nullable String defaultCommentorCredentials;
 
     @DataBoundConstructor
     public GithubCommentorConfiguration(@Nullable String defaultCommentorCredentials) {
         this.defaultCommentorCredentials = defaultCommentorCredentials;
     }
 
+    @DataBoundSetter
+    public void setDefaultCommentorCredentials(String defaultCommentorCredentials) {
+        this.defaultCommentorCredentials = defaultCommentorCredentials;
+        save();
+    }
+
     public GithubCommentorConfiguration(){
-        this.defaultCommentorCredentials = null;
+        load();
     }
 
     @Override
