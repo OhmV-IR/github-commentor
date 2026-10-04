@@ -14,20 +14,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import lombok.Getter;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 import org.jspecify.annotations.NonNull;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class DeleteCommentStep extends IdentifierTypeRequiredStep {
-    private final @Getter int commentId;
-
+public class DeleteCommentStep extends CommentIdStep {
     @DataBoundConstructor
     public DeleteCommentStep(String repo, CommentableResourceType identifierType, int commentId) {
-        super(repo, identifierType);
-        this.commentId = commentId;
+        super(repo, identifierType, commentId);
     }
 
     @Override
