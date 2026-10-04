@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
+    <f:section title="${%Github Commentor Configuration}">
+        <f:entry title="${%Default Commentor Credentials}" description="${%A Github personal access token username password pair. Username should be the GitHub username while the password is the token.}">
+            <c:select />
+        </f:entry>
+    </f:section>
+</j:jelly>

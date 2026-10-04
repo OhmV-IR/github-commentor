@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+    Github Commentor plugin providing steps for commenting on github issues, PRs and commits.
+</div>
