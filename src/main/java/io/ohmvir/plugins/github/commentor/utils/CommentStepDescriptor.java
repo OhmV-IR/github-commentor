@@ -9,13 +9,14 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
 import hudson.util.ListBoxModel;
-import java.util.Collections;
-import java.util.Set;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
+
+import java.util.Collections;
+import java.util.Set;
 
 public abstract class CommentStepDescriptor extends StepDescriptor {
     @Override
@@ -24,7 +25,8 @@ public abstract class CommentStepDescriptor extends StepDescriptor {
     }
 
     @POST
-    public ListBoxModel doFillCredentialsIdItems(@AncestorInPath Item item, @QueryParameter String credentialsId) {
+    public ListBoxModel doFillCredentialsIdItems(
+            @AncestorInPath Item item, @QueryParameter String credentialsId) {
         StandardListBoxModel result = new StandardListBoxModel();
 
         if (item == null) {

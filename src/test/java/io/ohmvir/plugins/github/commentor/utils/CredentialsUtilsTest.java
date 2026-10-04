@@ -42,19 +42,18 @@ class CredentialsUtilsTest {
     // helpers
     // ---------------------------------------------------------------------
 
-    private UsernamePasswordCredentialsImpl addUsernamePassword(String id, String password)
-            throws IOException, Descriptor.FormException {
-        UsernamePasswordCredentialsImpl credentials = new UsernamePasswordCredentialsImpl(
-                CredentialsScope.GLOBAL, id, "description of " + id, "user", password);
+    private UsernamePasswordCredentialsImpl addUsernamePassword(String id, String password) throws IOException, Descriptor.FormException {
+        UsernamePasswordCredentialsImpl credentials =
+                new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, id, "description of " + id, "user", password);
         store().addCredentials(Domain.global(), credentials);
         return credentials;
     }
 
     private void addSecretText(String id) throws IOException {
         store().addCredentials(
-                        Domain.global(),
-                        new StringCredentialsImpl(
-                                CredentialsScope.GLOBAL, id, "description of " + id, Secret.fromString("secret")));
+                Domain.global(),
+                new StringCredentialsImpl(
+                        CredentialsScope.GLOBAL, id, "description of " + id, Secret.fromString("secret")));
     }
 
     private CredentialsStore store() {
@@ -106,28 +105,22 @@ class CredentialsUtilsTest {
         notFoundMessage(() -> CredentialUtils.resolveToken(run, "does-not-exist"));
     }
 
+    /**
+     * Pins current behaviour: only null falls back to the default. Blank or padded explicit ids are
+     * looked up verbatim, so callers must normalise them first (the githubComment step does, via
+     * Util.fixEmptyAndTrim). Flip this test if you decide blank should mean "use the default".
+     */
     @Test
-    void explicitIdIsTrimmed() throws Exception {
-        addUsernamePassword("known-id", "ghp_known");
-
-        assertEquals("ghp_known", CredentialUtils.resolveToken(run, " known-id "));
-    }
-
-    @Test
-    void blankExplicitIdFallsBackToTheDefault() throws Exception {
+    void explicitIdIsUsedVerbatimWithoutTrimmingOrDefaultFallback() throws Exception {
+        addUsernamePassword("known-id", "pw");
         addUsernamePassword("default-pat", "ghp_default");
         setDefaultCredentials("default-pat");
 
-        for (String blank : new String[] {"", " ", "\t\n"}) {
-            assertEquals("ghp_default", CredentialUtils.resolveToken(run, blank));
-        }
-    }
-
-    @Test
-    void blankExplicitIdWithNoDefaultIsRejected() {
-        setDefaultCredentials(null);
-        for (String blank : new String[] {"", " ", "\t\n"}) {
-            assertThrows(AbortException.class, () -> CredentialUtils.resolveToken(run, blank));
+        for (String id : new String[] {"", " ", " known-id "}) {
+            assertThrows(
+                    AbortException.class,
+                    () -> CredentialUtils.resolveToken(run, id),
+                    "explicit id '" + id + "' should not resolve");
         }
     }
 

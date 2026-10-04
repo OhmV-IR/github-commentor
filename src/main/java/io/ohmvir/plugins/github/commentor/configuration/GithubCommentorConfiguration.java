@@ -60,7 +60,7 @@ public class GithubCommentorConfiguration extends GlobalConfiguration {
                 .includeCurrentValue(defaultCommentorCredentials);
     }
 
-    public static GithubCommentorConfiguration get() {
+    public static GithubCommentorConfiguration get(){
         return ExtensionList.lookupSingleton(GithubCommentorConfiguration.class);
     }
 }

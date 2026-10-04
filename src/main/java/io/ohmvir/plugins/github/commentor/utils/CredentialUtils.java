@@ -10,16 +10,15 @@ import io.ohmvir.plugins.github.commentor.configuration.GithubCommentorConfigura
 public class CredentialUtils {
     public static String resolveToken(Run<?, ?> run, String credentialsId) throws AbortException {
         String id = credentialsId;
-        if (credentialsId == null || credentialsId.trim().isEmpty()) {
+        if(credentialsId == null){
             id = Util.fixEmptyAndTrim(GithubCommentorConfiguration.get().getDefaultCommentorCredentials());
         }
-        if (id == null) {
+        if(id == null){
             throw new AbortException("Credentials not found");
         }
 
-        StandardUsernamePasswordCredentials credentials =
-                CredentialsProvider.findCredentialById(id, StandardUsernamePasswordCredentials.class, run);
-        if (credentials == null) {
+        StandardUsernamePasswordCredentials credentials = CredentialsProvider.findCredentialById(id, StandardUsernamePasswordCredentials.class, run);
+        if(credentials == null){
             throw new AbortException("Credentials not found");
         }
         CredentialsProvider.track(run, credentials);

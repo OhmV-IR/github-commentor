@@ -5,8 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.AbortException;
-import io.ohmvir.plugins.github.commentor.CommentableResourceType;
 import java.util.stream.Stream;
+
+import io.ohmvir.plugins.github.commentor.CommentableResourceType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,12 +33,12 @@ class IdentifierValidatorTest {
     @ParameterizedTest
     @ValueSource(
             strings = {
-                "octocat/hello-world",
-                "a/b",
-                "Owner_1/repo.name-2",
-                ".github/.github",
-                "ohmvir/github-commentor",
-                "123/456"
+                    "octocat/hello-world",
+                    "a/b",
+                    "Owner_1/repo.name-2",
+                    ".github/.github",
+                    "ohmvir/github-commentor",
+                    "123/456"
             })
     void validRepoIsAccepted(String repo) {
         assertDoesNotThrow(() -> IdentifierValidator.validateRepo(repo));
@@ -54,22 +55,22 @@ class IdentifierValidatorTest {
     @NullAndEmptySource
     @ValueSource(
             strings = {
-                " ",
-                "owner",
-                "owner/",
-                "/name",
-                "/",
-                "owner//name",
-                "owner/name/extra",
-                "owner /name",
-                "owner/na me",
-                "owner/name ",
-                "owner/name\n",
-                "owner\\name",
-                "owner/n\u00e4me",
-                "owner/name?x=1",
-                "owner/name#1",
-                "https://github.com/owner/name"
+                    " ",
+                    "owner",
+                    "owner/",
+                    "/name",
+                    "/",
+                    "owner//name",
+                    "owner/name/extra",
+                    "owner /name",
+                    "owner/na me",
+                    "owner/name ",
+                    "owner/name\n",
+                    "owner\\name",
+                    "owner/n\u00e4me",
+                    "owner/name?x=1",
+                    "owner/name#1",
+                    "https://github.com/owner/name"
             })
     void malformedRepoIsRejected(String repo) {
         assertThrows(AbortException.class, () -> IdentifierValidator.validateRepo(repo));
@@ -129,7 +130,7 @@ class IdentifierValidatorTest {
             names = {"ISSUE", "PULL_REQUEST"})
     void nonNumericOrOutOfRangeIdentifiersAreRejectedWithAbortException(CommentableResourceType type) {
         String[] bad = {
-            "abc", "", " ", " 5", "5 ", "1.5", "0x10", "12abc", "2147483648", "99999999999999999999", "a".repeat(40)
+                "abc", "", " ", " 5", "5 ", "1.5", "0x10", "12abc", "2147483648", "99999999999999999999", "a".repeat(40)
         };
         for (String id : bad) {
             assertThrows(
@@ -184,8 +185,7 @@ class IdentifierValidatorTest {
     @ParameterizedTest
     @MethodSource("invalidCommitHashes")
     void invalidCommitHashIsRejected(String hash) {
-        String message =
-                abortMessage(() -> IdentifierValidator.validateIdentifier(hash, CommentableResourceType.COMMIT));
+        String message = abortMessage(() -> IdentifierValidator.validateIdentifier(hash, CommentableResourceType.COMMIT));
 
         assertTrue(message.contains("Invalid commit identifier"), message);
     }
