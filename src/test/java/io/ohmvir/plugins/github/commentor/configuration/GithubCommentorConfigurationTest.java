@@ -245,4 +245,10 @@ class GithubCommentorConfigurationTest {
                     .isEmpty());
         }
     }
+
+    @Test
+    void singletonGetterDoesNotReturnNull(){
+        assertNotNull(GithubCommentorConfiguration.get());
+    }
+
 }
