@@ -40,6 +40,7 @@ public class EditCommentStep extends IdentifierTypeRequiredStep {
 
     public static class Execution extends SynchronousNonBlockingStepExecution<Void> {
         private final transient EditCommentStep step;
+
         @Serial
         private static final long serialVersionUID = 1L;
 
