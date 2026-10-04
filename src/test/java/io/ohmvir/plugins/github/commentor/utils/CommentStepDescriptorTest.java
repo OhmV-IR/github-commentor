@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import io.ohmvir.plugins.github.commentor.steps.CommentStep;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.jenkinsci.plugins.workflow.steps.Step;
@@ -44,7 +46,7 @@ class CommentStepDescriptorTest {
             throw new UnsupportedOperationException("not executed in these tests");
         }
 
-        static class DescriptorImpl extends CommentStepDescriptor {
+        static class DescriptorImpl extends CommentStep.CommentStepDescriptor {
             @Override
             public String getFunctionName() {
                 return "dummyComment";
@@ -58,7 +60,7 @@ class CommentStepDescriptorTest {
     }
 
     private JenkinsRule j;
-    private CommentStepDescriptor descriptor;
+    private CommentStep.CommentStepDescriptor descriptor;
     private FreeStyleProject project;
 
     @BeforeEach
@@ -135,7 +137,7 @@ class CommentStepDescriptorTest {
 
     @Test
     void fillMethodRequiresPost() throws NoSuchMethodException {
-        assertTrue(CommentStepDescriptor.class
+        assertTrue(CommentStep.CommentStepDescriptor.class
                 .getMethod("doFillCredentialsIdItems", Item.class, String.class)
                 .isAnnotationPresent(POST.class));
     }

@@ -6,10 +6,10 @@ import hudson.Util;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import io.ohmvir.plugins.github.commentor.CommentableResourceType;
-import io.ohmvir.plugins.github.commentor.utils.CommentStepDescriptor;
 import io.ohmvir.plugins.github.commentor.utils.CredentialUtils;
 import io.ohmvir.plugins.github.commentor.utils.IdentifierValidator;
 import java.io.IOException;
+import java.io.Serial;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -21,27 +21,14 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.jspecify.annotations.NonNull;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
 
-public class CreateCommentStep extends Step {
-
-    private final @Getter String repo;
-    private final @Getter String identifier;
-    private final @Getter CommentableResourceType identifierType;
+public class CreateCommentStep extends CommentStep {
     private final @Getter String body;
-    private @Getter String credentialsId;
 
     @DataBoundConstructor
     public CreateCommentStep(String repo, String identifier, CommentableResourceType identifierType, String body) {
-        this.repo = repo;
-        this.identifier = identifier;
-        this.identifierType = identifierType;
+        super(repo, identifier, identifierType);
         this.body = body;
-    }
-
-    @DataBoundSetter
-    public void setCredentialsId(String credentialsId) {
-        this.credentialsId = Util.fixEmptyAndTrim(credentialsId);
     }
 
     @Override
@@ -49,7 +36,8 @@ public class CreateCommentStep extends Step {
         return new Execution(context, this);
     }
 
-    public static class Execution extends SynchronousNonBlockingStepExecution<String> {
+    public static class Execution extends SynchronousNonBlockingStepExecution<Integer> {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private final transient CreateCommentStep step;
@@ -60,26 +48,26 @@ public class CreateCommentStep extends Step {
         }
 
         @Override
-        protected String run() throws Exception {
+        protected Integer run() throws Exception {
             Run<?, ?> run = getContext().get(Run.class);
             TaskListener listener = getContext().get(TaskListener.class);
 
-            IdentifierValidator.validateRepo(step.repo);
-            IdentifierValidator.validateIdentifier(step.identifier, step.identifierType);
+            IdentifierValidator.validateRepo(step.getRepo());
+            IdentifierValidator.validateIdentifier(step.getIdentifier(), step.getIdentifierType());
 
             if (step.body == null) {
                 throw new AbortException("Body must be provided");
             }
 
-            String token = CredentialUtils.resolveToken(run, step.credentialsId);
+            String token = CredentialUtils.resolveToken(run, step.getCredentialsId());
             JSONObject payload = new JSONObject().element("body", step.body);
             URI apiUrl =
-                    switch (step.identifierType) {
+                    switch (step.getIdentifierType()) {
                         case ISSUE, PULL_REQUEST ->
-                            URI.create("https://api.github.com/repos/" + step.repo + "/issues/" + step.identifier
+                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/issues/" + step.getIdentifier()
                                     + "/comments");
                         case COMMIT ->
-                            URI.create("https://api.github.com/repos/" + step.repo + "/commits/" + step.identifier
+                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/commits/" + step.getIdentifier()
                                     + "/comments");
                     };
 
@@ -97,19 +85,19 @@ public class CreateCommentStep extends Step {
                 response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             } catch (IOException e) {
                 e.printStackTrace(listener.getLogger());
-                throw new AbortException("Failed to call the github API for " + step.repo + ": " + e);
+                throw new AbortException("Failed to call the github API for " + step.getRepo() + ": " + e);
             }
 
             if (response.statusCode() != 201) {
                 throw new AbortException("Github returned HTTP " + response.statusCode() + " while commenting on "
-                        + step.repo + " with identifier " + step.identifier + "/" + step.identifierType + ": "
+                        + step.getRepo() + " with identifier " + step.getIdentifier() + "/" + step.getIdentifierType() + ": "
                         + response.body());
             }
             listener.getLogger()
-                    .println("Commented on " + step.repo + " with identifier " + step.identifier + "/"
-                            + step.identifierType);
+                    .println("Commented on " + step.getRepo() + " with identifier " + step.getIdentifier() + "/"
+                            + step.getIdentifierType());
             JSONObject resJson = JSONObject.fromObject(response.body());
-            return resJson.getString("id");
+            return resJson.getInt("id");
         }
     }
 
