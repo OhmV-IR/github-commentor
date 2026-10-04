@@ -7,6 +7,12 @@ import hudson.model.TaskListener;
 import io.ohmvir.plugins.github.commentor.CommentableResourceType;
 import io.ohmvir.plugins.github.commentor.utils.CredentialUtils;
 import io.ohmvir.plugins.github.commentor.utils.IdentifierValidator;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import lombok.Getter;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
@@ -14,13 +20,6 @@ import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 import org.jspecify.annotations.NonNull;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 
 public class EditCommentStep extends IdentifierTypeRequiredStep {
     private final @Getter String newBody;
@@ -52,7 +51,7 @@ public class EditCommentStep extends IdentifierTypeRequiredStep {
             TaskListener listener = getContext().get(TaskListener.class);
 
             IdentifierValidator.validateRepo(step.getRepo());
-            if(step.getIdentifierType() == null){
+            if (step.getIdentifierType() == null) {
                 throw new AbortException("Identifier type not specified");
             }
 
@@ -65,9 +64,11 @@ public class EditCommentStep extends IdentifierTypeRequiredStep {
             URI apiUrl =
                     switch (step.getIdentifierType()) {
                         case ISSUE, PULL_REQUEST ->
-                                URI.create("https://api.github.com/repos/" + step.getRepo() + "/issues/comments/" + step.getCommentId());
+                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/issues/comments/"
+                                    + step.getCommentId());
                         case COMMIT ->
-                                URI.create("https://api.github.com/repos/" + step.getRepo() + "/comments/" +  step.getCommentId());
+                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/comments/"
+                                    + step.getCommentId());
                     };
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(apiUrl)
@@ -86,12 +87,13 @@ public class EditCommentStep extends IdentifierTypeRequiredStep {
                 throw new AbortException("Failed to call the github API for " + step.getRepo() + ": " + e);
             }
 
-            if(response.statusCode() != 204){
+            if (response.statusCode() != 204) {
                 throw new AbortException("Github returned HTTP " + response.statusCode() + " while editing comment on "
-                        + step.getRepo() + " with identifier type " + step.getIdentifierType()
-                );
+                        + step.getRepo() + " with identifier type " + step.getIdentifierType());
             }
-            listener.getLogger().println("Edited comment on " + step.getRepo() + " with identifier type " + step.getIdentifierType());
+            listener.getLogger()
+                    .println("Edited comment on " + step.getRepo() + " with identifier type "
+                            + step.getIdentifierType());
             return null;
         }
     }

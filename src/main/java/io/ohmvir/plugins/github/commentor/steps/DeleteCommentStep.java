@@ -52,7 +52,7 @@ public class DeleteCommentStep extends IdentifierTypeRequiredStep {
             TaskListener listener = getContext().get(TaskListener.class);
 
             IdentifierValidator.validateRepo(step.getRepo());
-            if(step.getIdentifierType() == null){
+            if (step.getIdentifierType() == null) {
                 throw new AbortException("Identifier type not provided");
             }
 
@@ -60,7 +60,8 @@ public class DeleteCommentStep extends IdentifierTypeRequiredStep {
             URI apiUrl =
                     switch (step.getIdentifierType()) {
                         case ISSUE, PULL_REQUEST ->
-                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/issues/comments/" + step.getCommentId());
+                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/issues/comments/"
+                                    + step.getCommentId());
                         case COMMIT ->
                             URI.create("https://api.github.com/repos/" + step.getRepo() + "/comments/"
                                     + step.getCommentId());

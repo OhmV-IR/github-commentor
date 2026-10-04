@@ -10,7 +10,6 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.security.ACL;
 import hudson.util.ListBoxModel;
-import io.ohmvir.plugins.github.commentor.CommentableResourceType;
 import java.util.Collections;
 import java.util.Set;
 import jenkins.model.Jenkins;

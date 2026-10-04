@@ -67,7 +67,8 @@ class EditCommentStepTest {
 
     @Test
     void gettersReturnTheConstructorValues() {
-        EditCommentStep step = new EditCommentStep("octocat/hello-world", CommentableResourceType.COMMIT, 42, "new body");
+        EditCommentStep step =
+                new EditCommentStep("octocat/hello-world", CommentableResourceType.COMMIT, 42, "new body");
         step.setCredentialsId("my-cred");
 
         assertEquals("octocat/hello-world", step.getRepo());
