@@ -247,8 +247,7 @@ class GithubCommentorConfigurationTest {
     }
 
     @Test
-    void singletonGetterDoesNotReturnNull(){
+    void singletonGetterDoesNotReturnNull() {
         assertNotNull(GithubCommentorConfiguration.get());
     }
-
 }
