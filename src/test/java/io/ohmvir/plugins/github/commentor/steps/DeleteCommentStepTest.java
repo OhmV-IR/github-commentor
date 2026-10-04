@@ -42,7 +42,7 @@ class DeleteCommentStepTest {
 
     /** The only place that calls the constructor, so a signature change touches one line. */
     private static DeleteCommentStep newStep(String credentialsId) {
-        DeleteCommentStep step = new DeleteCommentStep("octocat/hello-world", "12", CommentableResourceType.ISSUE, 1);
+        DeleteCommentStep step = new DeleteCommentStep("octocat/hello-world", CommentableResourceType.ISSUE, 1);
         step.setCredentialsId(credentialsId);
         return step;
     }
@@ -67,11 +67,10 @@ class DeleteCommentStepTest {
 
     @Test
     void gettersReturnTheConstructorValues() {
-        DeleteCommentStep step = new DeleteCommentStep("octocat/hello-world", "abc", CommentableResourceType.COMMIT, 1);
+        DeleteCommentStep step = new DeleteCommentStep("octocat/hello-world", CommentableResourceType.COMMIT, 1);
         step.setCredentialsId("my-cred");
 
         assertEquals("octocat/hello-world", step.getRepo());
-        assertEquals("abc", step.getIdentifier());
         assertEquals(CommentableResourceType.COMMIT, step.getIdentifierType());
         assertEquals(1, step.getCommentId());
         assertEquals("my-cred", step.getCredentialsId());

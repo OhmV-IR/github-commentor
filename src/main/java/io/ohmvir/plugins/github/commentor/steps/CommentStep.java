@@ -23,16 +23,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
 public abstract class CommentStep extends Step {
-    private final @Getter String repo;
-    private final @Getter String identifier;
-    private final @Getter CommentableResourceType identifierType;
     private @Getter String credentialsId;
-
-    public CommentStep(String repo, String identifier, CommentableResourceType identifierType) {
-        this.repo = repo;
-        this.identifier = identifier;
-        this.identifierType = identifierType;
-    }
 
     @DataBoundSetter
     public void setCredentialsId(String credentialsId) {

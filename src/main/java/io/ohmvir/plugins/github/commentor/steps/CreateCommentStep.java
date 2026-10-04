@@ -21,7 +21,7 @@ import org.jenkinsci.plugins.workflow.steps.*;
 import org.jspecify.annotations.NonNull;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class CreateCommentStep extends CommentStep {
+public class CreateCommentStep extends IdentifierRequiredStep {
     private final @Getter String body;
 
     @DataBoundConstructor

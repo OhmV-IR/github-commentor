@@ -7,27 +7,30 @@ import hudson.model.TaskListener;
 import io.ohmvir.plugins.github.commentor.CommentableResourceType;
 import io.ohmvir.plugins.github.commentor.utils.CredentialUtils;
 import io.ohmvir.plugins.github.commentor.utils.IdentifierValidator;
-import java.io.IOException;
-import java.io.Serial;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import lombok.Getter;
+import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 import org.jspecify.annotations.NonNull;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class DeleteCommentStep extends IdentifierTypeRequiredStep {
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+
+public class EditCommentStep extends IdentifierTypeRequiredStep {
+    private final @Getter String newBody;
     private final @Getter int commentId;
 
     @DataBoundConstructor
-    public DeleteCommentStep(String repo, CommentableResourceType identifierType, int commentId) {
+    public EditCommentStep(String repo, CommentableResourceType identifierType, int commentId, String newBody) {
         super(repo, identifierType);
         this.commentId = commentId;
+        this.newBody = newBody;
     }
 
     @Override
@@ -36,12 +39,9 @@ public class DeleteCommentStep extends IdentifierTypeRequiredStep {
     }
 
     public static class Execution extends SynchronousNonBlockingStepExecution<Void> {
-        private final transient DeleteCommentStep step;
+        private final transient EditCommentStep step;
 
-        @Serial
-        private static final long serialVersionUID = 1L;
-
-        protected Execution(@NonNull StepContext context, @NonNull DeleteCommentStep step) throws Exception {
+        protected Execution(@NonNull StepContext context, EditCommentStep step) {
             super(context);
             this.step = step;
         }
@@ -53,17 +53,21 @@ public class DeleteCommentStep extends IdentifierTypeRequiredStep {
 
             IdentifierValidator.validateRepo(step.getRepo());
             if(step.getIdentifierType() == null){
-                throw new AbortException("Identifier type not provided");
+                throw new AbortException("Identifier type not specified");
+            }
+
+            if (step.newBody == null) {
+                throw new AbortException("New body must be provided");
             }
 
             String token = CredentialUtils.resolveToken(run, step.getCredentialsId());
+            JSONObject payload = new JSONObject().element("body", step.newBody);
             URI apiUrl =
                     switch (step.getIdentifierType()) {
                         case ISSUE, PULL_REQUEST ->
-                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/issues/comments/" + step.getCommentId());
+                                URI.create("https://api.github.com/repos/" + step.getRepo() + "/issues/comments/" + step.getCommentId());
                         case COMMIT ->
-                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/comments/"
-                                    + step.getCommentId());
+                                URI.create("https://api.github.com/repos/" + step.getRepo() + "/comments/" +  step.getCommentId());
                     };
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(apiUrl)
@@ -72,7 +76,7 @@ public class DeleteCommentStep extends IdentifierTypeRequiredStep {
                     .header("Accept", "application/vnd.github+json")
                     .header("X-Github-Api-Version", "2026-03-10")
                     .header("Content-Type", "application/json")
-                    .DELETE()
+                    .method("PATCH", HttpRequest.BodyPublishers.ofString(payload.toString()))
                     .build();
             HttpResponse<Void> response;
             try (HttpClient client = HttpClient.newHttpClient()) {
@@ -82,16 +86,12 @@ public class DeleteCommentStep extends IdentifierTypeRequiredStep {
                 throw new AbortException("Failed to call the github API for " + step.getRepo() + ": " + e);
             }
 
-            if (response.statusCode() != 204) {
-                throw new AbortException("Github returned HTTP " + response.statusCode() + " while deleting comment "
-                        + step.getCommentId() + " on "
+            if(response.statusCode() != 204){
+                throw new AbortException("Github returned HTTP " + response.statusCode() + " while editing comment on "
                         + step.getRepo() + " with identifier type " + step.getIdentifierType()
-                        + ": "
-                        + response.body());
+                );
             }
-            listener.getLogger()
-                    .println("Deleted comment " + step.getCommentId() + " on repo " + step.getRepo()
-                            + " attached to identifier type " + step.getIdentifierType());
+            listener.getLogger().println("Edited comment on " + step.getRepo() + " with identifier type " + step.getIdentifierType());
             return null;
         }
     }
@@ -100,12 +100,12 @@ public class DeleteCommentStep extends IdentifierTypeRequiredStep {
     public static class DescriptorImpl extends CommentStepDescriptor {
         @Override
         public String getFunctionName() {
-            return "deleteComment";
+            return "editComment";
         }
 
         @Override
         public @NonNull String getDisplayName() {
-            return "Deletes a comment on a github issue, pull request or commit";
+            return "Edit an existing comment on a github issue, pull request or commit";
         }
     }
 }
