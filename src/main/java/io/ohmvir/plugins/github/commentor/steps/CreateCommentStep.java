@@ -51,6 +51,8 @@ public class CreateCommentStep extends Step {
     }
 
     public static class Execution extends SynchronousNonBlockingStepExecution<String> {
+        private static final long serialVersionUID = 1L;
+
         private final transient CreateCommentStep step;
 
         Execution(StepContext context, CreateCommentStep step){

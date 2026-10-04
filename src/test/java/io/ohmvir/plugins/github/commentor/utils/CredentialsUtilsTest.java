@@ -105,22 +105,28 @@ class CredentialsUtilsTest {
         notFoundMessage(() -> CredentialUtils.resolveToken(run, "does-not-exist"));
     }
 
-    /**
-     * Pins current behaviour: only null falls back to the default. Blank or padded explicit ids are
-     * looked up verbatim, so callers must normalise them first (the githubComment step does, via
-     * Util.fixEmptyAndTrim). Flip this test if you decide blank should mean "use the default".
-     */
     @Test
-    void explicitIdIsUsedVerbatimWithoutTrimmingOrDefaultFallback() throws Exception {
-        addUsernamePassword("known-id", "pw");
+    void explicitIdIsTrimmed() throws Exception {
+        addUsernamePassword("known-id", "ghp_known");
+
+        assertEquals("ghp_known", CredentialUtils.resolveToken(run, " known-id "));
+    }
+
+    @Test
+    void blankExplicitIdFallsBackToTheDefault() throws Exception {
         addUsernamePassword("default-pat", "ghp_default");
         setDefaultCredentials("default-pat");
 
-        for (String id : new String[] {"", " ", " known-id "}) {
-            assertThrows(
-                    AbortException.class,
-                    () -> CredentialUtils.resolveToken(run, id),
-                    "explicit id '" + id + "' should not resolve");
+        for (String blank : new String[] {"", " ", "\t\n"}) {
+            assertEquals("ghp_default", CredentialUtils.resolveToken(run, blank));
+        }
+    }
+
+    @Test
+    void blankExplicitIdWithNoDefaultIsRejected() {
+        setDefaultCredentials(null);
+        for (String blank : new String[] {"", " ", "\t\n"}) {
+            assertThrows(AbortException.class, () -> CredentialUtils.resolveToken(run, blank));
         }
     }
 
