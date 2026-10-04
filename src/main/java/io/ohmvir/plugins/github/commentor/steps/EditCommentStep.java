@@ -8,6 +8,7 @@ import io.ohmvir.plugins.github.commentor.CommentableResourceType;
 import io.ohmvir.plugins.github.commentor.utils.CredentialUtils;
 import io.ohmvir.plugins.github.commentor.utils.IdentifierValidator;
 import java.io.IOException;
+import java.io.Serial;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -39,6 +40,8 @@ public class EditCommentStep extends IdentifierTypeRequiredStep {
 
     public static class Execution extends SynchronousNonBlockingStepExecution<Void> {
         private final transient EditCommentStep step;
+        @Serial
+        private static final long serialVersionUID = 1L;
 
         protected Execution(@NonNull StepContext context, EditCommentStep step) {
             super(context);
