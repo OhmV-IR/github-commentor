@@ -194,8 +194,7 @@ class GithubCommentorConfigurationTest {
 
     @Test
     void blankCurrentValueAddsNoExtraOption() {
-        assertEquals(
-                Collections.singletonList(""), values(config.doFillDefaultCommentorCredentialsItems("")));
+        assertEquals(Collections.singletonList(""), values(config.doFillDefaultCommentorCredentialsItems("")));
     }
 
     @Test
@@ -242,7 +241,8 @@ class GithubCommentorConfigurationTest {
         enableSecurity();
 
         try (ACLContext ignored = ACL.as2(Jenkins.ANONYMOUS2)) {
-            assertTrue(credentialIds(config.doFillDefaultCommentorCredentialsItems(null)).isEmpty());
+            assertTrue(credentialIds(config.doFillDefaultCommentorCredentialsItems(null))
+                    .isEmpty());
         }
     }
 }
