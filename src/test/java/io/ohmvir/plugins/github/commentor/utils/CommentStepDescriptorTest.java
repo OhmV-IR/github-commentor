@@ -14,6 +14,7 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.util.ListBoxModel;
 import hudson.util.Secret;
+import io.ohmvir.plugins.github.commentor.steps.CommentStep;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +45,7 @@ class CommentStepDescriptorTest {
             throw new UnsupportedOperationException("not executed in these tests");
         }
 
-        static class DescriptorImpl extends CommentStepDescriptor {
+        static class DescriptorImpl extends CommentStep.CommentStepDescriptor {
             @Override
             public String getFunctionName() {
                 return "dummyComment";
@@ -58,7 +59,7 @@ class CommentStepDescriptorTest {
     }
 
     private JenkinsRule j;
-    private CommentStepDescriptor descriptor;
+    private CommentStep.CommentStepDescriptor descriptor;
     private FreeStyleProject project;
 
     @BeforeEach
@@ -135,7 +136,7 @@ class CommentStepDescriptorTest {
 
     @Test
     void fillMethodRequiresPost() throws NoSuchMethodException {
-        assertTrue(CommentStepDescriptor.class
+        assertTrue(CommentStep.CommentStepDescriptor.class
                 .getMethod("doFillCredentialsIdItems", Item.class, String.class)
                 .isAnnotationPresent(POST.class));
     }
