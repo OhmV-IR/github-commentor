@@ -14,7 +14,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import lombok.Getter;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
@@ -22,13 +21,10 @@ import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 import org.jspecify.annotations.NonNull;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class EditCommentStep extends CommentIdStep {
-    private final @Getter String newBody;
-
+public class ReadCommentStep extends CommentIdStep {
     @DataBoundConstructor
-    public EditCommentStep(String repo, CommentableResourceType identifierType, int commentId, String newBody) {
+    public ReadCommentStep(String repo, CommentableResourceType identifierType, int commentId) {
         super(repo, identifierType, commentId);
-        this.newBody = newBody;
     }
 
     @Override
@@ -36,19 +32,19 @@ public class EditCommentStep extends CommentIdStep {
         return new Execution(context, this);
     }
 
-    public static class Execution extends SynchronousNonBlockingStepExecution<Void> {
-        private final transient EditCommentStep step;
+    public static class Execution extends SynchronousNonBlockingStepExecution<String> {
+        private final transient ReadCommentStep step;
 
         @Serial
         private static final long serialVersionUID = 1L;
 
-        protected Execution(@NonNull StepContext context, EditCommentStep step) {
+        public Execution(StepContext context, @NonNull ReadCommentStep step) {
             super(context);
             this.step = step;
         }
 
         @Override
-        protected Void run() throws Exception {
+        protected String run() throws Exception {
             Run<?, ?> run = getContext().get(Run.class);
             TaskListener listener = getContext().get(TaskListener.class);
 
@@ -57,12 +53,7 @@ public class EditCommentStep extends CommentIdStep {
                 throw new AbortException("Identifier type not specified");
             }
 
-            if (step.newBody == null) {
-                throw new AbortException("New body must be provided");
-            }
-
             String token = CredentialUtils.resolveToken(run, step.getCredentialsId());
-            JSONObject payload = new JSONObject().element("body", step.newBody);
             URI apiUrl =
                     switch (step.getIdentifierType()) {
                         case ISSUE, PULL_REQUEST ->
@@ -79,24 +70,25 @@ public class EditCommentStep extends CommentIdStep {
                     .header("Accept", "application/vnd.github+json")
                     .header("X-Github-Api-Version", "2026-03-10")
                     .header("Content-Type", "application/json")
-                    .method("PATCH", HttpRequest.BodyPublishers.ofString(payload.toString()))
+                    .GET()
                     .build();
-            HttpResponse<Void> response;
+            HttpResponse<String> response;
             try (HttpClient client = HttpClient.newHttpClient()) {
-                response = client.send(httpRequest, HttpResponse.BodyHandlers.discarding());
+                response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             } catch (IOException e) {
                 e.printStackTrace(listener.getLogger());
                 throw new AbortException("Failed to call the github API for " + step.getRepo() + ": " + e);
             }
 
-            if (response.statusCode() != 204) {
+            if (response.statusCode() != 200) {
                 throw new AbortException("Github returned HTTP " + response.statusCode() + " while editing comment on "
                         + step.getRepo() + " with identifier type " + step.getIdentifierType());
             }
+            JSONObject responseObject = JSONObject.fromObject(response.body());
             listener.getLogger()
-                    .println("Edited comment on " + step.getRepo() + " with identifier type "
-                            + step.getIdentifierType());
-            return null;
+                    .println("Read comment on " + step.getRepo() + " with identifier type " + step.getIdentifierType()
+                            + " and cid " + step.getCommentId());
+            return responseObject.getString("body");
         }
     }
 
@@ -104,12 +96,12 @@ public class EditCommentStep extends CommentIdStep {
     public static class DescriptorImpl extends CommentStepDescriptor {
         @Override
         public String getFunctionName() {
-            return "editComment";
+            return "readComment";
         }
 
         @Override
         public @NonNull String getDisplayName() {
-            return "Edit an existing comment on a github issue, pull request or commit";
+            return "Read a comment from its identifier";
         }
     }
 }
