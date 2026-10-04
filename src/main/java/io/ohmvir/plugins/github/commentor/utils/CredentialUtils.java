@@ -10,7 +10,7 @@ import io.ohmvir.plugins.github.commentor.configuration.GithubCommentorConfigura
 public class CredentialUtils {
     public static String resolveToken(Run<?, ?> run, String credentialsId) throws AbortException {
         String id = credentialsId;
-        if(credentialsId == null){
+        if(credentialsId == null || credentialsId.trim().isEmpty()){
             id = Util.fixEmptyAndTrim(GithubCommentorConfiguration.get().getDefaultCommentorCredentials());
         }
         if(id == null){
