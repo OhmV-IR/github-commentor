@@ -42,18 +42,19 @@ class CredentialsUtilsTest {
     // helpers
     // ---------------------------------------------------------------------
 
-    private UsernamePasswordCredentialsImpl addUsernamePassword(String id, String password) throws IOException, Descriptor.FormException {
-        UsernamePasswordCredentialsImpl credentials =
-                new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, id, "description of " + id, "user", password);
+    private UsernamePasswordCredentialsImpl addUsernamePassword(String id, String password)
+            throws IOException, Descriptor.FormException {
+        UsernamePasswordCredentialsImpl credentials = new UsernamePasswordCredentialsImpl(
+                CredentialsScope.GLOBAL, id, "description of " + id, "user", password);
         store().addCredentials(Domain.global(), credentials);
         return credentials;
     }
 
     private void addSecretText(String id) throws IOException {
         store().addCredentials(
-                Domain.global(),
-                new StringCredentialsImpl(
-                        CredentialsScope.GLOBAL, id, "description of " + id, Secret.fromString("secret")));
+                        Domain.global(),
+                        new StringCredentialsImpl(
+                                CredentialsScope.GLOBAL, id, "description of " + id, Secret.fromString("secret")));
     }
 
     private CredentialsStore store() {
