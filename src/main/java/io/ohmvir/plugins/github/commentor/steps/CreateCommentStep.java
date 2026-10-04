@@ -2,7 +2,6 @@ package io.ohmvir.plugins.github.commentor.steps;
 
 import hudson.AbortException;
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import io.ohmvir.plugins.github.commentor.CommentableResourceType;
@@ -64,11 +63,11 @@ public class CreateCommentStep extends CommentStep {
             URI apiUrl =
                     switch (step.getIdentifierType()) {
                         case ISSUE, PULL_REQUEST ->
-                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/issues/" + step.getIdentifier()
-                                    + "/comments");
+                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/issues/"
+                                    + step.getIdentifier() + "/comments");
                         case COMMIT ->
-                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/commits/" + step.getIdentifier()
-                                    + "/comments");
+                            URI.create("https://api.github.com/repos/" + step.getRepo() + "/commits/"
+                                    + step.getIdentifier() + "/comments");
                     };
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -90,7 +89,8 @@ public class CreateCommentStep extends CommentStep {
 
             if (response.statusCode() != 201) {
                 throw new AbortException("Github returned HTTP " + response.statusCode() + " while commenting on "
-                        + step.getRepo() + " with identifier " + step.getIdentifier() + "/" + step.getIdentifierType() + ": "
+                        + step.getRepo() + " with identifier " + step.getIdentifier() + "/" + step.getIdentifierType()
+                        + ": "
                         + response.body());
             }
             listener.getLogger()

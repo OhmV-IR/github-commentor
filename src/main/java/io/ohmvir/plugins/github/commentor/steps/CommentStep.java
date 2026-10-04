@@ -11,6 +11,8 @@ import hudson.model.TaskListener;
 import hudson.security.ACL;
 import hudson.util.ListBoxModel;
 import io.ohmvir.plugins.github.commentor.CommentableResourceType;
+import java.util.Collections;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import lombok.Getter;
 import org.jenkinsci.plugins.workflow.steps.Step;
@@ -19,9 +21,6 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
-
-import java.util.Collections;
-import java.util.Set;
 
 public abstract class CommentStep extends Step {
     private final @Getter String repo;
@@ -40,7 +39,7 @@ public abstract class CommentStep extends Step {
         this.credentialsId = Util.fixEmptyAndTrim(credentialsId);
     }
 
-    public static abstract class CommentStepDescriptor extends StepDescriptor {
+    public abstract static class CommentStepDescriptor extends StepDescriptor {
         @Override
         public Set<? extends Class<?>> getRequiredContext() {
             return Set.of(Run.class, TaskListener.class);
@@ -77,5 +76,4 @@ public abstract class CommentStep extends Step {
                     .includeCurrentValue(credentialsId);
         }
     }
-
 }
