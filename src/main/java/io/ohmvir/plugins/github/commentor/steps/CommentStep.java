@@ -4,6 +4,7 @@ import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+import hudson.Util;
 import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -36,7 +37,7 @@ public abstract class CommentStep extends Step {
 
     @DataBoundSetter
     public void setCredentialsId(String credentialsId) {
-        this.credentialsId = credentialsId;
+        this.credentialsId = Util.fixEmptyAndTrim(credentialsId);
     }
 
     public static abstract class CommentStepDescriptor extends StepDescriptor {

@@ -99,13 +99,8 @@ class CreateCommentStepTest {
         }
     }
 
-    /**
-     * Pipeline binds through the constructor, not the setter, so a blank credentialsId from a script
-     * currently bypasses normalisation and never falls back to the default credentials. Fails until
-     * the constructor normalises too (or credentialsId leaves the constructor).
-     */
     @Test
-    void constructorNormalisesBlankCredentialsId() {
+    void setterNormalisesBlankCredentialsId() {
         assertNull(newStep("").getCredentialsId());
         assertNull(newStep("   ").getCredentialsId());
         assertEquals("my-cred", newStep(" my-cred ").getCredentialsId());

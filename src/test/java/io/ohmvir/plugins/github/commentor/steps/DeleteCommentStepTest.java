@@ -50,8 +50,8 @@ class DeleteCommentStepTest {
 
     private static String script(String repo, String identifier, String type, String credentialsId) {
         String credentials = credentialsId == null ? "" : ", credentialsId: '" + credentialsId + "'";
-        return "createComment repo: '" + repo + "', identifier: '" + identifier + "', identifierType: '" + type
-                + "', body: 'hello'" + credentials;
+        return "deleteComment repo: '" + repo + "', identifier: '" + identifier + "', identifierType: '" + type
+                + "', commentId: 1" + credentials;
     }
 
     private WorkflowRun runExpectingFailure(String pipelineScript) throws Exception {
@@ -99,13 +99,8 @@ class DeleteCommentStepTest {
         }
     }
 
-    /**
-     * Pipeline binds through the constructor, not the setter, so a blank credentialsId from a script
-     * currently bypasses normalisation and never falls back to the default credentials. Fails until
-     * the constructor normalises too (or credentialsId leaves the constructor).
-     */
     @Test
-    void constructorNormalisesBlankCredentialsId() {
+    void setterNormalisesBlankCredentialsId() {
         assertNull(newStep("").getCredentialsId());
         assertNull(newStep("   ").getCredentialsId());
         assertEquals("my-cred", newStep(" my-cred ").getCredentialsId());
@@ -117,9 +112,9 @@ class DeleteCommentStepTest {
 
     @Test
     void stepIsRegisteredUnderItsPipelineName() {
-        StepDescriptor descriptor = StepDescriptor.byFunctionName("createComment");
+        StepDescriptor descriptor = StepDescriptor.byFunctionName("deleteComment");
 
-        assertNotNull(descriptor, "createComment should be a known Pipeline step");
+        assertNotNull(descriptor, "deleteComment should be a known Pipeline step");
         assertInstanceOf(DeleteCommentStep.DescriptorImpl.class, descriptor);
     }
 
@@ -132,7 +127,7 @@ class DeleteCommentStepTest {
     void descriptorHasAFunctionNameAndADisplayName() {
         DeleteCommentStep.DescriptorImpl descriptor = new DeleteCommentStep.DescriptorImpl();
 
-        assertEquals("createComment", descriptor.getFunctionName());
+        assertEquals("deleteComment", descriptor.getFunctionName());
         assertTrue(descriptor.getDisplayName().toLowerCase().contains("comment"));
     }
 
