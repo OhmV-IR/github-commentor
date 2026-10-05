@@ -1,8 +1,9 @@
 target
-
+.claude/
 # mvn hpi:run
 work
-
+*.swp
+*~
 # IntelliJ IDEA project files
 *.iml
 *.iws
